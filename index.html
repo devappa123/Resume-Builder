@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Builder - Home</title>
+    
+    <!-- Inline Critical CSS -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .home-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .home-content {
+            text-align: center;
+            background: white;
+            padding: 3rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            max-width: 700px;
+            width: 100%;
+            animation: scaleIn 0.5s ease-out;
+        }
+        
+        .home-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4f46e5;
+            margin-bottom: 1rem;
+            animation: slideInUp 0.7s ease-out 0.2s both;
+        }
+        
+        .home-subtitle {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #4f46e5;
+            border: 2px solid #4f46e5;
+        }
+        
+        .home-features {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .feature {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .feature i {
+            font-size: 2rem;
+            color: #4f46e5;
+        }
+        
+        .feature span {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        
+        .theme-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 3rem;
+        }
+        
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2.5rem;
+            margin-bottom: 2rem;
+            max-width: 1400px;
+        }
+        
+        @media (max-width: 1024px) {
+            .theme-grid {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+                margin: 0 auto 2rem;
+            }
+        }
+        
+        .theme-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideInUp 0.6s ease-out both;
+        }
+        
+        .theme-card:nth-child(1) { animation-delay: 0.1s; }
+        .theme-card:nth-child(2) { animation-delay: 0.2s; }
+        .theme-card:nth-child(3) { animation-delay: 0.3s; }
+        
+        .theme-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .theme-preview {
+            height: 280px;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            background: white;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        /* Corporate Theme Preview */
+        .theme-preview.corporate-preview {
+            background: white;
+        }
+        
+        .theme-preview.corporate-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+        
+        .corporate-preview .preview-name {
+            position: absolute;
+            top: 10px;
+            left: 1rem;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .corporate-preview .preview-section {
+            position: absolute;
+            top: 70px;
+            left: 1rem;
+            right: 1rem;
+        }
+        
+        .corporate-preview .preview-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #1e3a8a;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .corporate-preview .preview-line {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .corporate-preview .preview-line:nth-child(2) { width: 90%; }
+        .corporate-preview .preview-line:nth-child(3) { width: 75%; }
+        
+        .corporate-preview .preview-skills {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .corporate-preview .skill-tag {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.6rem;
+        }
+        
+        /* Modern Dark Theme Preview */
+        .theme-preview.modern-preview {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            flex-direction: row;
+            padding: 0;
+        }
+        
+        .modern-preview .preview-sidebar {
+            width: 35%;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .modern-preview .preview-circle {
+            width: 40px;
+            height: 40px;
+            background: #334155;
+            border-radius: 50%;
+            margin-bottom: 0.5rem;
+        }
+        
+        .modern-preview .preview-line {
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            margin-bottom: 0.4rem;
+        }
+        
+        .modern-preview .preview-main {
+            flex: 1;
+            padding: 1rem;
+            color: white;
+        }
+        
+        .modern-preview .preview-name {
+            color: #60a5fa;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px rgba(96,165,250,0.3);
+        }
+        
+        .modern-preview .preview-title {
+            color: #60a5fa;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border-bottom: 1px solid #60a5fa;
+            padding-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .modern-preview .content-line {
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            margin-bottom: 0.4rem;
+        }
+        
+        .modern-preview .content-line:nth-child(3) { width: 85%; }
+        .modern-preview .content-line:nth-child(4) { width: 70%; }
+        
+        /* Academic Theme Preview */
+        .theme-preview.academic-preview {
+            background: white;
+            padding: 1rem;
+        }
+        
+        .academic-preview .preview-header {
+            text-align: center;
+            border-bottom: 3px solid #1f2937;
+            padding-bottom: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .academic-preview .preview-name {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        
+        .academic-preview .preview-contact {
+            font-size: 0.6rem;
+            color: #6b7280;
+        }
+        
+        .academic-preview .preview-title {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #1f2937;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid #374151;
+            padding-bottom: 0.25rem;
+            margin: 1rem 0 0.5rem;
+        }
+        
+        .academic-preview .preview-line {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin-bottom: 0.4rem;
+        }
+        
+        .academic-preview .preview-line:nth-child(2) { width: 90%; }
+        .academic-preview .preview-line:nth-child(3) { width: 80%; }
+        
+        .theme-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+        }
+        
+        .theme-description {
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+    </style>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- HOME PAGE -->
+    <div id="homePage" class="page active">
+        <div class="home-container">
+            <div class="home-content">
+                <h1 class="home-title">Build Your Professional Resume</h1>
+                <p class="home-subtitle">Create a stunning resume in minutes with our easy-to-use builder. Choose from multiple themes and export in multiple formats.</p>
+                <button id="buildResumeBtn" class="btn btn-primary">
+                    <i class="fas fa-file-alt"></i> Build Resume
+                </button>
+                <div class="home-features">
+                    <div class="feature">
+                        <i class="fas fa-palette"></i>
+                        <span>Multiple Themes</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-download"></i>
+                        <span>Export PDF/PNG/DOCX</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>Fully Responsive</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- THEME SELECTION PAGE -->
+    <div id="themePage" class="page">
+        <div class="theme-container">
+            <h2 class="page-title">Choose Your Resume Theme</h2>
+            <p class="page-subtitle">Select a theme that best represents your professional style</p>
+            
+            <div class="theme-grid">
+                <!-- Corporate Theme -->
+                <div class="theme-card">
+                    <div class="theme-preview corporate-preview">
+                        <div class="preview-name">John Doe</div>
+                        <div class="preview-section">
+                            <div class="preview-title">EXPERIENCE</div>
+                            <div class="preview-line"></div>
+                            <div class="preview-line"></div>
+                            <div class="preview-line"></div>
+                        </div>
+                        <div class="preview-skills">
+                            <span class="skill-tag">JavaScript</span>
+                            <span class="skill-tag">React</span>
+                            <span class="skill-tag">Node.js</span>
+                            <span class="skill-tag">Python</span>
+                        </div>
+                    </div>
+                    <h3 class="theme-name">Corporate Clean</h3>
+                    <p class="theme-description">Professional and traditional blue design perfect for corporate roles</p>
+                    <button class="btn btn-secondary select-theme-btn" data-theme="corporate">
+                        Select Theme
+                    </button>
+                </div>
+
+                <!-- Modern Dark Theme -->
+                <div class="theme-card">
+                    <div class="theme-preview modern-preview">
+                        <div class="preview-sidebar">
+                            <div class="preview-circle"></div>
+                            <div class="preview-line"></div>
+                            <div class="preview-line" style="width: 80%;"></div>
+                            <div class="preview-line" style="width: 90%;"></div>
+                            <div class="preview-line" style="width: 70%;"></div>
+                        </div>
+                        <div class="preview-main">
+                            <div class="preview-name">John Doe</div>
+                            <div class="preview-title">ABOUT</div>
+                            <div class="content-line"></div>
+                            <div class="content-line"></div>
+                            <div class="content-line"></div>
+                            <div class="content-line"></div>
+                        </div>
+                    </div>
+                    <h3 class="theme-name">Modern Dark</h3>
+                    <p class="theme-description">Sleek and contemporary dark design for creative professionals</p>
+                    <button class="btn btn-secondary select-theme-btn" data-theme="modern">
+                        Select Theme
+                    </button>
+                </div>
+
+                <!-- Academic Theme -->
+                <div class="theme-card">
+                    <div class="theme-preview academic-preview">
+                        <div class="preview-header">
+                            <div class="preview-name">Dr. John Doe</div>
+                            <div class="preview-contact">john.doe@university.edu • (123) 456-7890</div>
+                        </div>
+                        <div class="preview-title">EDUCATION</div>
+                        <div class="preview-line"></div>
+                        <div class="preview-line"></div>
+                        <div class="preview-line"></div>
+                        <div class="preview-title">PUBLICATIONS</div>
+                        <div class="preview-line"></div>
+                        <div class="preview-line"></div>
+                    </div>
+                    <h3 class="theme-name">Academic Simple</h3>
+                    <p class="theme-description">Clean and formal serif design for academic and research positions</p>
+                    <button class="btn btn-secondary select-theme-btn" data-theme="academic">
+                        Select Theme
+                    </button>
+                </div>
+            </div>
+            
+            <button id="backToHomeBtn" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </button>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- JavaScript -->
+    <script>
+        // Clear localStorage when returning to home page
+        // This allows fresh start for each new resume
+        if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
+            localStorage.clear();
+            console.log('localStorage cleared - Ready for new resume');
+        }
+        
+        $(document).ready(function() {
+            console.log('Page loaded successfully!');
+            
+            $('#buildResumeBtn').on('click', function() {
+                console.log('Build Resume clicked');
+                $('.page').removeClass('active');
+                $('#themePage').addClass('active');
+            });
+            
+            $('#backToHomeBtn').on('click', function() {
+                console.log('Back to Home clicked');
+                $('.page').removeClass('active');
+                $('#homePage').addClass('active');
+            });
+            
+            $('.select-theme-btn').on('click', function() {
+                const theme = $(this).data('theme');
+                console.log('Theme selected:', theme);
+                localStorage.setItem('selectedTheme', theme);
+                window.location.href = 'form.html';
+            });
+        });
+    </script>
+</body>
+</html>

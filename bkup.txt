@@ -1,0 +1,621 @@
+/* ===================================
+   RESUME BUILDER - PREVIEW PAGE JS
+   Final preview and download functionality
+   =================================== */
+
+// ===================================
+// GLOBAL STATE
+// ===================================
+let APP_STATE = null;
+
+// ===================================
+// INITIALIZATION
+// ===================================
+$(document).ready(function() {
+    console.log('Preview page initialized');
+    
+    // Load data from localStorage
+    loadFromLocalStorage();
+    
+    // Render final preview
+    renderFinalPreview();
+    
+    // Initialize event listeners
+    initializeEventListeners();
+});
+
+// ===================================
+// EVENT LISTENERS
+// ===================================
+function initializeEventListeners() {
+    $('#editResumeBtn').on('click', () => {
+        window.location.href = 'form.html';
+    });
+    
+    $('#newResumeBtn').on('click', startNewResume);
+    $('#downloadPdfBtn').on('click', downloadPDF);
+    $('#downloadPngBtn').on('click', downloadPNG);
+    $('#downloadDocxBtn').on('click', downloadDOCX);
+}
+
+// ===================================
+// LOCAL STORAGE
+// ===================================
+function loadFromLocalStorage() {
+    try {
+        const savedData = localStorage.getItem('resumeBuilderData');
+        if (savedData) {
+            APP_STATE = JSON.parse(savedData);
+            console.log('Resume data loaded:', APP_STATE);
+        } else {
+            alert('No resume data found. Redirecting to home...');
+            window.location.href = 'index.html';
+        }
+    } catch (error) {
+        console.error('Error loading from localStorage:', error);
+        alert('Error loading resume data. Redirecting to home...');
+        window.location.href = 'index.html';
+    }
+}
+
+// ===================================
+// RESUME PREVIEW RENDERING
+// ===================================
+function renderFinalPreview() {
+    if (!APP_STATE) return;
+    
+    const theme = APP_STATE.selectedTheme || 'corporate';
+    const html = generateResumeHTML(theme, APP_STATE.formData);
+    
+    $('#finalPreview').html(html);
+}
+
+function generateResumeHTML(theme, data) {
+    if (theme === 'modern') {
+        return generateModernTheme(data);
+    } else if (theme === 'academic') {
+        return generateAcademicTheme(data);
+    } else {
+        return generateCorporateTheme(data);
+    }
+}
+
+function generateCorporateTheme(data) {
+    const skills = data.skills ? data.skills.split(',').map(s => s.trim()).filter(s => s) : [];
+    const certs = data.certifications ? data.certifications.split('\n').filter(s => s.trim()) : [];
+    const langs = data.languages ? data.languages.split('\n').filter(s => s.trim()) : [];
+    
+    return `
+        <div class="resume corporate">
+            <div class="resume-header">
+                ${data.personal.photo ? `<img src="${data.personal.photo}" alt="Profile Photo" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 1rem;">` : ''}
+                <h1 class="resume-name">${data.personal.fullName || 'Your Name'}</h1>
+                <div class="resume-contact">
+                    ${data.personal.email ? `<span class="resume-contact-item"><i class="fas fa-envelope"></i> ${data.personal.email}</span>` : ''}
+                    ${data.personal.phone ? `<span class="resume-contact-item"><i class="fas fa-phone"></i> ${data.personal.phone}</span>` : ''}
+                    ${data.personal.location ? `<span class="resume-contact-item"><i class="fas fa-map-marker-alt"></i> ${data.personal.location}</span>` : ''}
+                    ${data.personal.linkedin ? `<span class="resume-contact-item"><i class="fab fa-linkedin"></i> LinkedIn</span>` : ''}
+                    ${data.personal.portfolio ? `<span class="resume-contact-item"><i class="fas fa-globe"></i> Portfolio</span>` : ''}
+                    ${data.personal.github ? `<span class="resume-contact-item"><i class="fab fa-github"></i> GitHub</span>` : ''}
+                </div>
+            </div>
+            
+            ${data.summary ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Professional Summary</h2>
+                <p>${data.summary}</p>
+            </div>
+            ` : ''}
+            
+            ${data.experience.length > 0 ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Work Experience</h2>
+                ${data.experience.map(exp => `
+                    <div class="resume-item">
+                        <div class="resume-item-header">
+                            <div>
+                                <div class="resume-item-title">${exp.title}</div>
+                                <div class="resume-item-subtitle">${exp.company}</div>
+                            </div>
+                            <div class="resume-item-date">${exp.startDate} - ${exp.endDate}</div>
+                        </div>
+                        ${exp.description ? `<div class="resume-item-description">${exp.description}</div>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+            ` : ''}
+            
+            ${data.education.length > 0 ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Education</h2>
+                ${data.education.map(edu => `
+                    <div class="resume-item">
+                        <div class="resume-item-header">
+                            <div>
+                                <div class="resume-item-title">${edu.degree}</div>
+                                <div class="resume-item-subtitle">${edu.institution}</div>
+                            </div>
+                            <div class="resume-item-date">${edu.startDate} - ${edu.endDate}</div>
+                        </div>
+                        ${edu.description ? `<div class="resume-item-description">${edu.description}</div>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+            ` : ''}
+            
+            ${data.projects.length > 0 ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Projects</h2>
+                ${data.projects.map(proj => `
+                    <div class="resume-item">
+                        <div class="resume-item-title">${proj.name}</div>
+                        ${proj.technologies ? `<div class="resume-item-subtitle">${proj.technologies}</div>` : ''}
+                        ${proj.description ? `<div class="resume-item-description">${proj.description}</div>` : ''}
+                        ${proj.link ? `<div style="margin-top: 0.5rem;"><a href="${proj.link}" style="color: #3498db;">View Project</a></div>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+            ` : ''}
+            
+            ${skills.length > 0 ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Skills</h2>
+                <div class="resume-skills">
+                    ${skills.map(skill => `<span class="resume-skill">${skill}</span>`).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            ${certs.length > 0 ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Certifications</h2>
+                <ul>
+                    ${certs.map(cert => `<li>${cert}</li>`).join('')}
+                </ul>
+            </div>
+            ` : ''}
+            
+            ${langs.length > 0 ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Languages</h2>
+                <ul>
+                    ${langs.map(lang => `<li>${lang}</li>`).join('')}
+                </ul>
+            </div>
+            ` : ''}
+            
+            ${data.hobbies ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Hobbies & Interests</h2>
+                <p>${data.hobbies}</p>
+            </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function generateModernTheme(data) {
+    const skills = data.skills ? data.skills.split(',').map(s => s.trim()).filter(s => s) : [];
+    const certs = data.certifications ? data.certifications.split('\n').filter(s => s.trim()) : [];
+    const langs = data.languages ? data.languages.split('\n').filter(s => s.trim()) : [];
+    
+    return `
+        <div class="resume modern">
+            <div class="resume-sidebar">
+                ${data.personal.photo ? `<img src="${data.personal.photo}" alt="Profile Photo" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 1.5rem;">` : ''}
+                
+                <div class="resume-section">
+                    <h2 class="resume-section-title">Contact</h2>
+                    ${data.personal.email ? `<div class="resume-contact-item" style="margin-bottom: 0.5rem;"><i class="fas fa-envelope"></i> ${data.personal.email}</div>` : ''}
+                    ${data.personal.phone ? `<div class="resume-contact-item" style="margin-bottom: 0.5rem;"><i class="fas fa-phone"></i> ${data.personal.phone}</div>` : ''}
+                    ${data.personal.location ? `<div class="resume-contact-item" style="margin-bottom: 0.5rem;"><i class="fas fa-map-marker-alt"></i> ${data.personal.location}</div>` : ''}
+                </div>
+                
+                ${skills.length > 0 ? `
+                <div class="resume-section">
+                    <h2 class="resume-section-title">Skills</h2>
+                    <div class="resume-skills">
+                        ${skills.map(skill => `<span class="resume-skill">${skill}</span>`).join('')}
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${langs.length > 0 ? `
+                <div class="resume-section">
+                    <h2 class="resume-section-title">Languages</h2>
+                    <ul style="padding-left: 1.25rem;">
+                        ${langs.map(lang => `<li style="margin-bottom: 0.5rem;">${lang}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+            </div>
+            
+            <div class="resume-main">
+                <h1 class="resume-name">${data.personal.fullName || 'Your Name'}</h1>
+                
+                ${data.summary ? `
+                <div class="resume-section">
+                    <h2 class="resume-section-title">About Me</h2>
+                    <p>${data.summary}</p>
+                </div>
+                ` : ''}
+                
+                ${data.experience.length > 0 ? `
+                <div class="resume-section">
+                    <h2 class="resume-section-title">Experience</h2>
+                    ${data.experience.map(exp => `
+                        <div class="resume-item">
+                            <div class="resume-item-header">
+                                <div>
+                                    <div class="resume-item-title">${exp.title}</div>
+                                    <div class="resume-item-subtitle">${exp.company}</div>
+                                </div>
+                                <div class="resume-item-date">${exp.startDate} - ${exp.endDate}</div>
+                            </div>
+                            ${exp.description ? `<div class="resume-item-description">${exp.description}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+                
+                ${data.education.length > 0 ? `
+                <div class="resume-section">
+                    <h2 class="resume-section-title">Education</h2>
+                    ${data.education.map(edu => `
+                        <div class="resume-item">
+                            <div class="resume-item-header">
+                                <div>
+                                    <div class="resume-item-title">${edu.degree}</div>
+                                    <div class="resume-item-subtitle">${edu.institution}</div>
+                                </div>
+                                <div class="resume-item-date">${edu.startDate} - ${edu.endDate}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+                
+                ${data.projects.length > 0 ? `
+                <div class="resume-section">
+                    <h2 class="resume-section-title">Projects</h2>
+                    ${data.projects.map(proj => `
+                        <div class="resume-item">
+                            <div class="resume-item-title">${proj.name}</div>
+                            ${proj.technologies ? `<div class="resume-item-subtitle">${proj.technologies}</div>` : ''}
+                            ${proj.description ? `<div class="resume-item-description">${proj.description}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+                
+                ${certs.length > 0 ? `
+                <div class="resume-section">
+                    <h2 class="resume-section-title">Certifications</h2>
+                    <ul style="padding-left: 1.25rem;">
+                        ${certs.map(cert => `<li style="margin-bottom: 0.5rem;">${cert}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function generateAcademicTheme(data) {
+    const skills = data.skills ? data.skills.split(',').map(s => s.trim()).filter(s => s) : [];
+    const certs = data.certifications ? data.certifications.split('\n').filter(s => s.trim()) : [];
+    const langs = data.languages ? data.languages.split('\n').filter(s => s.trim()) : [];
+    
+    return `
+        <div class="resume academic">
+            <div class="resume-header">
+                <h1 class="resume-name">${data.personal.fullName || 'Your Name'}</h1>
+                <div class="resume-contact">
+                    ${data.personal.email ? `<span class="resume-contact-item">${data.personal.email}</span>` : ''}
+                    ${data.personal.phone ? `<span class="resume-contact-item">${data.personal.phone}</span>` : ''}
+                    ${data.personal.location ? `<span class="resume-contact-item">${data.personal.location}</span>` : ''}
+                </div>
+            </div>
+            
+            ${data.summary ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Objective</h2>
+                <p>${data.summary}</p>
+            </div>
+            ` : ''}
+            
+            ${data.education.length > 0 ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Education</h2>
+                ${data.education.map(edu => `
+                    <div class="resume-item">
+                        <div class="resume-item-header">
+                            <div>
+                                <div class="resume-item-title">${edu.degree}</div>
+                                <div class="resume-item-subtitle">${edu.institution}</div>
+                            </div>
+                            <div class="resume-item-date">${edu.startDate} - ${edu.endDate}</div>
+                        </div>
+                        ${edu.description ? `<div class="resume-item-description">${edu.description}</div>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+            ` : ''}
+            
+            ${data.experience.length > 0 ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Experience</h2>
+                ${data.experience.map(exp => `
+                    <div class="resume-item">
+                        <div class="resume-item-header">
+                            <div>
+                                <div class="resume-item-title">${exp.title}</div>
+                                <div class="resume-item-subtitle">${exp.company}</div>
+                            </div>
+                            <div class="resume-item-date">${exp.startDate} - ${exp.endDate}</div>
+                        </div>
+                        ${exp.description ? `<div class="resume-item-description">${exp.description}</div>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+            ` : ''}
+            
+            ${data.projects.length > 0 ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Research & Projects</h2>
+                ${data.projects.map(proj => `
+                    <div class="resume-item">
+                        <div class="resume-item-title">${proj.name}</div>
+                        ${proj.description ? `<div class="resume-item-description">${proj.description}</div>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+            ` : ''}
+            
+            ${skills.length > 0 ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Skills & Competencies</h2>
+                <div class="resume-skills">
+                    ${skills.map(skill => `<span class="resume-skill">${skill}</span>`).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            ${certs.length > 0 ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Certifications</h2>
+                <ul style="padding-left: 1.5rem;">
+                    ${certs.map(cert => `<li>${cert}</li>`).join('')}
+                </ul>
+            </div>
+            ` : ''}
+            
+            ${langs.length > 0 ? `
+            <div class="resume-section">
+                <h2 class="resume-section-title">Languages</h2>
+                <p>${langs.join(' • ')}</p>
+            </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+// ===================================
+// START NEW RESUME
+// ===================================
+function startNewResume() {
+    if (confirm('Are you sure you want to start a new resume? All current data will be cleared.')) {
+        localStorage.removeItem('resumeBuilderData');
+        localStorage.removeItem('selectedTheme');
+        window.location.href = 'index.html';
+    }
+}
+
+// ===================================
+// EXPORT FUNCTIONS
+// ===================================
+function showLoading() {
+    $('#loadingOverlay').addClass('active');
+}
+
+function hideLoading() {
+    $('#loadingOverlay').removeClass('active');
+}
+
+function downloadPDF() {
+    showLoading();
+    
+    const element = $('#finalPreview .resume')[0];
+    if (!element) {
+        alert('No resume found to download!');
+        hideLoading();
+        return;
+    }
+    
+    const opt = {
+        margin: 10,
+        filename: `${APP_STATE.formData.personal.fullName || 'resume'}_resume.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    html2pdf().set(opt).from(element).save().then(() => {
+        hideLoading();
+    }).catch(error => {
+        console.error('PDF generation error:', error);
+        alert('Error generating PDF. Please try again.');
+        hideLoading();
+    });
+}
+
+function downloadPNG() {
+    showLoading();
+    
+    const element = $('#finalPreview .resume')[0];
+    if (!element) {
+        alert('No resume found to download!');
+        hideLoading();
+        return;
+    }
+    
+    html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+    }).then(canvas => {
+        canvas.toBlob(blob => {
+            saveAs(blob, `${APP_STATE.formData.personal.fullName || 'resume'}_resume.png`);
+            hideLoading();
+        });
+    }).catch(error => {
+        console.error('PNG generation error:', error);
+        alert('Error generating PNG. Please try again.');
+        hideLoading();
+    });
+}
+
+function downloadDOCX() {
+    showLoading();
+    
+    try {
+        const data = APP_STATE.formData;
+        const { Document, Paragraph, TextRun, HeadingLevel, AlignmentType } = docx;
+        
+        const sections = [];
+        
+        // Header
+        sections.push(
+            new Paragraph({
+                text: data.personal.fullName || 'Your Name',
+                heading: HeadingLevel.HEADING_1,
+                alignment: AlignmentType.CENTER,
+            })
+        );
+        
+        // Contact
+        const contactInfo = [
+            data.personal.email,
+            data.personal.phone,
+            data.personal.location
+        ].filter(Boolean).join(' | ');
+        
+        if (contactInfo) {
+            sections.push(
+                new Paragraph({
+                    text: contactInfo,
+                    alignment: AlignmentType.CENTER,
+                })
+            );
+        }
+        
+        sections.push(new Paragraph({ text: '' }));
+        
+        // Summary
+        if (data.summary) {
+            sections.push(
+                new Paragraph({
+                    text: 'PROFESSIONAL SUMMARY',
+                    heading: HeadingLevel.HEADING_2,
+                }),
+                new Paragraph({ text: data.summary })
+            );
+            sections.push(new Paragraph({ text: '' }));
+        }
+        
+        // Experience
+        if (data.experience.length > 0) {
+            sections.push(
+                new Paragraph({
+                    text: 'WORK EXPERIENCE',
+                    heading: HeadingLevel.HEADING_2,
+                })
+            );
+            data.experience.forEach(exp => {
+                sections.push(
+                    new Paragraph({
+                        children: [
+                            new TextRun({ text: exp.title, bold: true }),
+                            new TextRun({ text: ` - ${exp.company}` }),
+                        ]
+                    }),
+                    new Paragraph({ text: `${exp.startDate} - ${exp.endDate}` }),
+                    new Paragraph({ text: exp.description || '' }),
+                    new Paragraph({ text: '' })
+                );
+            });
+        }
+        
+        // Education
+        if (data.education.length > 0) {
+            sections.push(
+                new Paragraph({
+                    text: 'EDUCATION',
+                    heading: HeadingLevel.HEADING_2,
+                })
+            );
+            data.education.forEach(edu => {
+                sections.push(
+                    new Paragraph({
+                        children: [
+                            new TextRun({ text: edu.degree, bold: true }),
+                        ]
+                    }),
+                    new Paragraph({ text: edu.institution }),
+                    new Paragraph({ text: `${edu.startDate} - ${edu.endDate}` }),
+                    new Paragraph({ text: '' })
+                );
+            });
+        }
+        
+        // Projects
+        if (data.projects.length > 0) {
+            sections.push(
+                new Paragraph({
+                    text: 'PROJECTS',
+                    heading: HeadingLevel.HEADING_2,
+                })
+            );
+            data.projects.forEach(proj => {
+                sections.push(
+                    new Paragraph({
+                        children: [
+                            new TextRun({ text: proj.name, bold: true }),
+                        ]
+                    }),
+                    new Paragraph({ text: proj.technologies || '' }),
+                    new Paragraph({ text: proj.description || '' }),
+                    new Paragraph({ text: '' })
+                );
+            });
+        }
+        
+        // Skills
+        if (data.skills) {
+            sections.push(
+                new Paragraph({
+                    text: 'SKILLS',
+                    heading: HeadingLevel.HEADING_2,
+                }),
+                new Paragraph({ text: data.skills })
+            );
+        }
+        
+        const doc = new Document({
+            sections: [{
+                properties: {},
+                children: sections,
+            }],
+        });
+        
+        docx.Packer.toBlob(doc).then(blob => {
+            saveAs(blob, `${data.personal.fullName || 'resume'}_resume.docx`);
+            hideLoading();
+        });
+        
+    } catch (error) {
+        console.error('DOCX generation error:', error);
+        alert('Error generating DOCX. Please try again.');
+        hideLoading();
+    }
+}
